@@ -1,6 +1,42 @@
-module Lib
-    ( someFunc
-    ) where
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleContexts #-}
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+module Lib where
+
+import Data.Complex
+import Test.QuickCheck
+
+import LinAlg
+import Util
+import BraKet
+import Operators
+
+-- Utility functions --
+
+takeKet :: Int -> Ket c -> Ket c
+takeKet n (Ket basis coeffs) = Ket basis $ take n coeffs
+
+expectedValue :: Hilbert v => Operator v -> v -> Complex Double
+expectedValue op vec = vec <.> (act op vec)
+
+commutator :: Vector v => Operator v -> Operator v -> Operator v
+commutator a b = a <> b <~> b <> a
+
+normalize :: Hilbert v => v -> v
+normalize v = ((1.0 :+ 0.0) / (norm v :+ 0.0)) <**> v
+
+-- vacuum Fock state
+vacuum :: Ket (Complex Double)
+vacuum = Ket Fock [1.0]
+
+-- n-photon Fock basis state
+fockN :: Int -> Ket (Complex Double)
+fockN n = normalize $ act ((mconcat . replicate n) create) vacuum 
+
+-- Coherent state
+coherent :: Complex Double -> Ket (Complex Double)
+coherent alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $ zipWith (/) 
+                     (map (alpha**) $ fromIntegral <$> [0..]) 
+                     (map (sqrt . fromIntegral . factorial) [0..]))
