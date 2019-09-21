@@ -11,29 +11,28 @@ data LadderOperator = Raise | Lower
 -- Creation and annihilation operator definitions --
 
 create :: Operator (Ket (Complex Double))
-create = Operator raisingFunc
-    where
+create = Operator (\state -> case state of 
       -- Any operator acting on vzero returns vzero
-      raisingFunc Nil = Nil   
-      raisingFunc (Ket Fock cs) = Ket Fock $ (zipWith (*) 
+      Nil -> Nil   
+      (Ket Fock cs) -> Ket Fock $ (zipWith (*) 
             sqrts newCoeffs)
         where
           sqrts = map ((:+0.0) . sqrt) [0.0..numStates+1]
           numStates = fromIntegral $ length cs :: Double
           newCoeffs = (1.0 :+ 0.0) : cs 
+        )
 
 -- TODO: have lowering operator act correctly on the vacuum
 annihilate :: Operator (Ket (Complex Double))
-annihilate = Operator loweringFunc
-    where
+annihilate = Operator (\ket -> case ket of 
       -- Any operator acting on vzero returns vzero
-      loweringFunc Nil = Nil   
-      loweringFunc (Ket Fock cs) = Ket Fock $ (zipWith (*) 
-            sqrts newCoeffs)
+      Nil -> Nil   
+      (Ket Fock cs) -> Ket Fock $ (zipWith (*) sqrts newCoeffs)
         where
           sqrts = map (sqrt . (:+0.0) . (+1.0)) [0.0..numStates-1]
           numStates = fromIntegral $ length cs :: Double
           newCoeffs = tail cs
+      )
 
 -- Number operator definition: n = conj(a) <> a
 number :: Operator (Ket (Complex Double))
