@@ -51,3 +51,8 @@ instance Vector v => Vector (Operator v) where
     a <**> o = Operator (\x -> a <**> act o x)
     vzero = Operator (\_ -> vzero)
     vneg o = Operator (\x -> vneg $ act o x)
+
+-- Trace of an operator in some basis
+trace :: Hilbert v => [v] -> Operator v -> Complex Double
+trace basis op = sum $ map (\vec -> vec <.> (act op vec)) basis
+

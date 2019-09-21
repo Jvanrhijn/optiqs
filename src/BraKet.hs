@@ -26,6 +26,12 @@ data Bra c where
     NilBra :: Bra c
       deriving (Show, Eq)
 
+getCoeffsKet :: Ket c -> [c]
+getCoeffsKet (Ket _ cs) = cs
+
+getCoeffsBra :: Bra c -> [c]
+getCoeffsBra (Bra _ cs) = cs
+
 instance Dual (Ket (Complex Double)) (Bra (Complex Double)) where
     dual (Ket b cs) = Bra b $ conjugate <$> cs
 
@@ -34,6 +40,9 @@ instance Dual (Bra (Complex Double)) (Ket (Complex Double)) where
 
 instance Functor Ket where
     fmap f (Ket b cs) = Ket b (f <$> cs)
+
+instance Functor Bra where
+    fmap f (Bra b cs) = Bra b (f <$> cs)
 
 instance Vector (Ket (Complex Double)) where
     -- Zero vector
@@ -61,3 +70,35 @@ instance Hilbert (Ket (Complex Double)) where
       where 
         dif12 = max 0 $ length coeffs1 - length coeffs2
         dif21 = max 0 $ length coeffs2 - length coeffs1
+
+instance Vector (Bra (Complex Double)) where
+    -- Zero vector
+    vzero = NilBra
+    -- Negation: just negate all coefficients
+    vneg ket = negate <$> ket
+    
+    -- Addition: add coefficients element-wise
+    k@(Bra _ _) <+> NilBra = k
+    NilBra <+> k@(Bra _ _) = k
+    (Bra b exp1) <+> (Bra _ exp2) = Bra b $ zipWith (+) 
+            (padZeroN lendif21 exp1) (padZeroN lendif12 exp2)
+      where 
+        lendif12 = max 0 $ length exp1 - length exp2
+        lendif21 = max 0 $ length exp2 - length exp1
+
+    -- Scalar multiplication: multiply all coefficients
+    a <**> ket = (*a) <$> ket
+
+instance Hilbert (Bra (Complex Double)) where
+    -- Inner product: Like l2 inner product; multiply coefficients 
+    -- and sum
+    (Bra _ coeffs1) <.> (Bra _ coeffs2) = sum $ zipWith (*) 
+              (map conjugate $ padZeroN dif21 coeffs1) (padZeroN dif21 coeffs2)
+      where 
+        dif12 = max 0 $ length coeffs1 - length coeffs2
+        dif21 = max 0 $ length coeffs2 - length coeffs1
+
+outerProduct :: Ket (Complex Double) -> Bra (Complex Double) 
+                                     -> Operator (Ket (Complex Double))
+outerProduct ket bra = Operator $ \operand -> ((dual bra) <.> operand) <**> ket
+

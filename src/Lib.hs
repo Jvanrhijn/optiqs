@@ -18,8 +18,10 @@ import Operators
 takeKet :: Int -> Ket c -> Ket c
 takeKet n (Ket basis coeffs) = Ket basis $ take n coeffs
 
-expectedValue :: Hilbert v => Operator v -> v -> Complex Double
-expectedValue op vec = vec <.> (act op vec)
+expectedValue :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double)) 
+                                        -> [Ket (Complex Double)]  -> Complex Double
+--expectedValue op vec = vec <.> (act op vec)
+expectedValue ps basis op vs = trace basis $ (densityMatrix ps vs) <> op
 
 commutator :: Vector v => Operator v -> Operator v -> Operator v
 commutator a b = a <> b <~> b <> a
@@ -37,6 +39,7 @@ fockN n = normalize $ act ((mconcat . replicate n) create) vacuum
 
 -- Coherent state
 coherent :: Complex Double -> Ket (Complex Double)
-coherent alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $ zipWith (/) 
-                     (map (alpha**) $ fromIntegral <$> [0..]) 
-                     (map (sqrt . fromIntegral . factorial) [0..]))
+coherent alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $
+                     [alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n) | n <- [0..]])
+
+
