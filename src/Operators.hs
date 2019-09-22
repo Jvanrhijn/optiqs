@@ -64,3 +64,4 @@ squeeze n z = expOp n ((0.5 :+ 0.0) <**> (conjugate z <**> asq <~> (z <**> asq')
   where
     asq = annihilate <> annihilate 
     asq' = create <> create
+
