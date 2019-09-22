@@ -4,9 +4,7 @@ import Data.Complex
 
 import BraKet
 import LinAlg
-
-data LadderOperator = Raise | Lower
-    deriving (Show, Eq)
+import Util
 
 -- Creation and annihilation operator definitions --
 
@@ -27,6 +25,7 @@ annihilate :: Operator (Ket (Complex Double))
 annihilate = Operator (\ket -> case ket of 
       -- Any operator acting on vzero returns vzero
       Nil -> Nil   
+      -- General case
       (Ket Fock cs) -> Ket Fock $ (zipWith (*) sqrts newCoeffs)
         where
           sqrts = map (sqrt . (:+0.0) . (+1.0)) [0.0..numStates-1]
@@ -47,3 +46,21 @@ densityMatrix :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Do
 densityMatrix ps kets = foldl1 (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
   where
     outProds = map (\state -> outerProduct state state) kets
+
+-- Displacement operator
+
+-- Operator exponential
+expOp :: Vector v => Int -> Operator v -> Operator v
+expOp nterms op = Operator id <+> 
+      (foldl1 (<+>) [((1.0 :+ 0.0) / (fromIntegral $ factorial k))
+                          <**> (mconcat $ replicate k op) | k <- [1..nterms]])
+
+displacement :: Int -> Complex Double -> Operator (Ket (Complex Double))
+displacement n alpha = expOp n (alpha <**> create <~> ((conjugate alpha) <**> annihilate))
+
+-- Squeezing operator
+squeeze :: Int -> Complex Double -> Operator (Ket (Complex Double))
+squeeze n z = expOp n ((0.5 :+ 0.0) <**> (conjugate z <**> asq <~> (z <**> asq')))
+  where
+    asq = annihilate <> annihilate 
+    asq' = create <> create
