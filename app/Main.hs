@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Main where
 
 import Wigner
@@ -8,14 +10,22 @@ import QUtil
 import LinAlg
 
 import Data.Complex
+import Data.List.Split
+
+import qualified Data.Vector.Unboxed as U
+import qualified Data.Vector.Generic.Mutable as M
+import Numeric.FFT.Vector.Invertible
 
 main :: IO ()
 main = do
-    writeComplex "expd" $ computeExpD dZ (-bound, bound) states
+    let expd = computeExpD dZ (-bound, bound) states
+    let n = round $ sqrt $ fromIntegral $ length expd
+    let expd2d = chunksOf n expd
+    writeComplex "expd" $ mconcat $ fft2d expd2d
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
 states :: [Ket (Complex Double)]
-states = [fockN 0]
+states = [vacuum]
 
 bound :: Double
 bound = 3.0
@@ -24,10 +34,10 @@ dZ :: Double
 dZ = 0.1
 
 expDispFock :: Complex Double -> [Ket (Complex Double)] -> Complex Double
-expDispFock alpha states = expectDisp 10 alpha ps basis states
+expDispFock alpha states = expectDisp 40 alpha ps basis states
   where
     ps = replicate (length states) (1.0 / (fromIntegral $ length states)) :: [Double]
-    basis = map fockN [0..20]
+    basis = map fockN [0..0]
 
 getPlane :: Double -> Double -> Double -> [Complex Double]
 getPlane dz zMin zMax = (:+) <$> range <*> range 

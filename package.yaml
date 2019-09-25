@@ -36,6 +36,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - optiqs
+    - vector
+    - vector-fftw 
 
 tests:
   optiqs-test:
