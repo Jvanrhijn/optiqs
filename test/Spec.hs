@@ -26,6 +26,11 @@ prop_annihilate_eigenstate =
         forAll (genSizedComplex 5.0) $ \alpha ->
             let state = takeKet n $ coherent alpha 
                 in (norm ((act annihilate state <~> (alpha <**> state)))) <= 1e-3 * (fromIntegral n)
+        
+-- Displacing the vacuum creates a coherent state
+prop_displaced_vacuum :: Complex Double -> Property
+prop_displaced_vacuum alpha = norm (act (displacement 10 alpha) vacuum <~> (takeKet 10 $ coherent alpha)) <= 1e-3
+
 
 return []
 runTests = $quickCheckAll
