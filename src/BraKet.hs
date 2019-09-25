@@ -57,4 +57,3 @@ instance Hilbert (Ket (Complex Double)) where
 outerProduct :: Ket (Complex Double) -> Ket (Complex Double) 
                                      -> Operator (Ket (Complex Double))
 outerProduct ket bra = Operator $ \operand -> (ket <.> operand) <**> ket
-

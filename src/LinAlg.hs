@@ -17,6 +17,7 @@ class Vector v where
     -- additive inverse 
     vneg :: v -> v
     (<~>) :: v -> v -> v
+    -- vector subtraction for convenience
     u <~> v = u <+> (vneg v)
 
 class Vector v => Hilbert v where

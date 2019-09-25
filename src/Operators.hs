@@ -47,14 +47,13 @@ densityMatrix ps kets = foldl1 (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
   where
     outProds = map (\state -> outerProduct state state) kets
 
--- Displacement operator
-
 -- Operator exponential
 expOp :: Vector v => Int -> Operator v -> Operator v
 expOp nterms op = Operator id <+> 
       (foldl1 (<+>) [((1.0 :+ 0.0) / (fromIntegral $ factorial k))
                           <**> (mconcat $ replicate k op) | k <- [1..nterms]])
 
+-- Displacement operator
 displacement :: Int -> Complex Double -> Operator (Ket (Complex Double))
 displacement n alpha = expOp n (alpha <**> create <~> ((conjugate alpha) <**> annihilate))
 
@@ -62,6 +61,5 @@ displacement n alpha = expOp n (alpha <**> create <~> ((conjugate alpha) <**> an
 squeeze :: Int -> Complex Double -> Operator (Ket (Complex Double))
 squeeze n z = expOp n ((0.5 :+ 0.0) <**> (conjugate z <**> asq <~> (z <**> asq')))
   where
-    asq = annihilate <> annihilate 
     asq' = create <> create
-
+    asq = annihilate <> annihilate 

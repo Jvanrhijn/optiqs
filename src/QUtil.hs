@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Lib where
+module QUtil where
 
 import Data.Complex
 import Test.QuickCheck
