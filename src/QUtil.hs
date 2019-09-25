@@ -13,10 +13,12 @@ import Util
 import BraKet
 import Operators
 
+import qualified Data.Vector.Unboxed as U
+
 -- Utility functions --
 
-takeKet :: Int -> Ket c -> Ket c
-takeKet n (Ket basis coeffs) = Ket basis $ take n coeffs
+takeKet :: U.Unbox c => Int -> Ket c -> Ket c
+takeKet n (Ket basis coeffs) = Ket basis $ U.take n coeffs
 
 expectedValue :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double)) 
                                         -> [Ket (Complex Double)]  -> Complex Double
@@ -31,15 +33,15 @@ normalize v = ((1.0 :+ 0.0) / (norm v :+ 0.0)) <**> v
 
 -- vacuum Fock state
 vacuum :: Ket (Complex Double)
-vacuum = Ket Fock [1.0]
+vacuum = Ket Fock $ U.fromList [1.0]
 
 -- n-photon Fock basis state
 fockN :: Int -> Ket (Complex Double)
 fockN n = normalize $ act ((mconcat . replicate n) create) vacuum 
 
 -- Coherent state
-coherent :: Complex Double -> Ket (Complex Double)
-coherent alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $
-                     [alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n) | n <- [0..]])
+coherent :: Int -> Complex Double -> Ket (Complex Double)
+coherent m alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $
+                     U.fromList [alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n) | n <- [0..m]])
 
 

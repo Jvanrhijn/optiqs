@@ -25,7 +25,7 @@ main = do
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
 states :: [Ket (Complex Double)]
-states = [vacuum]
+states = [coherent 10 1.0]
 
 bound :: Double
 bound = 3.0
@@ -37,7 +37,7 @@ expDispFock :: Complex Double -> [Ket (Complex Double)] -> Complex Double
 expDispFock alpha states = expectDisp 40 alpha ps basis states
   where
     ps = replicate (length states) (1.0 / (fromIntegral $ length states)) :: [Double]
-    basis = map fockN [0..0]
+    basis = map fockN [0..10]
 
 getPlane :: Double -> Double -> Double -> [Complex Double]
 getPlane dz zMin zMax = (:+) <$> range <*> range 

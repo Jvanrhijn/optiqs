@@ -11,10 +11,8 @@ import Numeric.FFT.Vector.Invertible
 -- 2D fourier transform
 -- fourier transform all rows, then all columns
 fft2d :: [[Complex Double]] -> [[Complex Double]]
-fft2d vs = transpose ftcols
-    where
-        ftrows = map (U.toList . run dft . U.fromList) vs
-        ftcols = map (U.toList . run dft . U.fromList) $ transpose ftrows
+fft2d vs = transpose $ map (U.toList . run dft . U.fromList) $ 
+    transpose $ map (U.toList . run idft . U.fromList) vs
 
 -- general useful stuff
 
@@ -27,6 +25,9 @@ zeros = 0 : zeros
 
 padZeroN :: Num a => Int -> [a] -> [a]
 padZeroN n xs = xs ++ replicate n 0
+
+padZeroN' :: U.Unbox a => Num a => Int -> U.Vector a -> U.Vector a
+padZeroN' n xs = xs U.++ U.replicate n 0
 
 padZero :: Num a => [a] -> [a]
 padZero = (++zeros)

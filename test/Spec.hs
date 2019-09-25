@@ -3,6 +3,7 @@
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
+import qualified Data.Vector.Unboxed as U
 
 import Data.Complex
 
@@ -13,7 +14,7 @@ import Util
 import QUtil
 
 instance Arbitrary (Ket (Complex Double)) where
-    arbitrary = Ket Fock <$> arbitrary
+    arbitrary = (Ket Fock . U.fromList) <$> arbitrary
 
 genSizedComplex :: Double -> Gen (Complex Double)
 genSizedComplex x = (\z -> case z of
@@ -33,7 +34,7 @@ prop_op_exp_constant z = forAll (choose (20, 50)) $ \n ->
 
 -- Test normalization of Kets
 prop_normalization :: Ket (Complex Double) -> Property
-prop_normalization ket@(Ket Fock cs) = not (null cs) ==>  (norm (normalize ket) - 1.0) <= 1e-10
+prop_normalization ket@(Ket Fock cs) = not (U.null cs) ==>  (norm (normalize ket) - 1.0) <= 1e-10
 
 -- Coherent state is eigenstate of annihilation operator
 -- within tolerance
@@ -43,7 +44,7 @@ prop_annihilate_eigenstate :: Property
 prop_annihilate_eigenstate = 
     forAll (choose (50, 150)) $ \n -> 
         forAll (genSizedComplex 5.0) $ \alpha ->
-            let state = takeKet n $ coherent alpha 
+            let state = coherent n alpha 
                 in (norm ((act annihilate state <~> (alpha <**> state)))) <= 1e-3 * (fromIntegral n)
         
 -- Displacing the vacuum creates a coherent state
@@ -52,7 +53,7 @@ prop_annihilate_eigenstate =
 prop_displaced_vacuum :: Property
 prop_displaced_vacuum = forAll (choose (10, 50)) $ \n -> 
     forAll (genSizedComplex 1.0) $ \alpha ->
-        norm (act (displacement n alpha) vacuum <~> (takeKet (n + 1) $ coherent alpha)) <= 1e-3 * (fromIntegral n)
+        norm (act (displacement n alpha) vacuum <~> (coherent n alpha)) <= 1e-3 * (fromIntegral n)
 
 
 return []

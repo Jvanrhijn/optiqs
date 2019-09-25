@@ -6,18 +6,20 @@ import BraKet
 import LinAlg
 import Util
 
+import qualified Data.Vector.Unboxed as U
+
 -- Creation and annihilation operator definitions --
 
 create :: Operator (Ket (Complex Double))
 create = Operator (\state -> case state of 
       -- Any operator acting on vzero returns vzero
       Nil -> Nil   
-      (Ket Fock cs) -> Ket Fock $ (zipWith (*) 
+      (Ket Fock cs) -> Ket Fock $ (U.zipWith (*) 
             sqrts newCoeffs)
         where
-          sqrts = map ((:+0.0) . sqrt) [0.0..numStates+1]
-          numStates = fromIntegral $ length cs :: Double
-          newCoeffs = (1.0 :+ 0.0) : cs 
+          sqrts = U.fromList $ map ((:+0.0) . sqrt) [0.0..numStates+1]
+          numStates = fromIntegral $ U.length cs :: Double
+          newCoeffs = U.cons (1.0 :+ 0.0) cs 
         )
 
 -- TODO: have lowering operator act correctly on the vacuum
@@ -26,11 +28,11 @@ annihilate = Operator (\ket -> case ket of
       -- Any operator acting on vzero returns vzero
       Nil -> Nil   
       -- General case
-      (Ket Fock cs) -> Ket Fock $ (zipWith (*) sqrts newCoeffs)
+      (Ket Fock cs) -> Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
         where
-          sqrts = map (sqrt . (:+0.0) . (+1.0)) [0.0..numStates-1]
-          numStates = fromIntegral $ length cs :: Double
-          newCoeffs = tail cs
+          sqrts = U.fromList $ map (sqrt . (:+0.0) . (+1.0)) [0.0..numStates-1]
+          numStates = fromIntegral $ U.length cs :: Double
+          newCoeffs = U.tail cs
       )
 
 -- Number operator definition: n = conj(a) <> a
