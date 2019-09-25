@@ -6,6 +6,7 @@
 module LinAlg where
 
 import Data.Complex
+import Util
 
 class Vector v where
     -- vector addition
@@ -57,3 +58,10 @@ instance Vector v => Vector (Operator v) where
 trace :: Hilbert v => [v] -> Operator v -> Complex Double
 trace basis op = sum $ map (\vec -> vec <.> (act op vec)) basis
 
+-- Operator exponential
+expOpTerm :: Vector v => Int -> Operator v -> Operator v
+expOpTerm 0 _ = Operator id
+expOpTerm n op = (((1.0 :+ 0.0) / (fromIntegral n)) <**> op) <> expOpTerm (n-1) op
+
+expOp :: Vector v => Int -> Operator v -> Operator v
+expOp nterms op = foldl1 (<+>) [expOpTerm n op | n <- [0..nterms]] 

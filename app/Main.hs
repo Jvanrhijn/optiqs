@@ -18,7 +18,7 @@ states :: [Ket (Complex Double)]
 states = [fockN 0]
 
 bound :: Double
-bound = 3
+bound = 3.0
 
 dZ :: Double
 dZ = 0.1
@@ -27,7 +27,7 @@ expDispFock :: Complex Double -> [Ket (Complex Double)] -> Complex Double
 expDispFock alpha states = expectDisp 10 alpha ps basis states
   where
     ps = replicate (length states) (1.0 / (fromIntegral $ length states)) :: [Double]
-    basis = map fockN [0..2]
+    basis = map fockN [0..20]
 
 getPlane :: Double -> Double -> Double -> [Complex Double]
 getPlane dz zMin zMax = (:+) <$> range <*> range 
