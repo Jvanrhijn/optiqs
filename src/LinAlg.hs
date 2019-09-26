@@ -7,6 +7,7 @@ module LinAlg where
 
 import Data.Complex
 import Util
+import Data.List
 
 class Vector v where
     -- vector addition
@@ -64,4 +65,6 @@ expOpTerm 0 _ = Operator id
 expOpTerm n op = (((1.0 :+ 0.0) / (fromIntegral n)) <**> op) <> expOpTerm (n-1) op
 
 expOp :: Vector v => Int -> Operator v -> Operator v
-expOp nterms op = foldl1 (<+>) [expOpTerm n op | n <- [0..nterms]] 
+expOp nterms op = foldl1' (<+>) [expOpTerm n op | n <- [0..nterms]] 
+--expOp nterms op = foldl1' (<+>) (scanl (\l r -> (r <**> (l <> op))) (Operator id) $ coeffs)
+--    where coeffs = [1.0 / k :+ 0.0 | k <- [1..fromIntegral nterms]]

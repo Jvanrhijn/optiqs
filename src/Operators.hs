@@ -1,6 +1,7 @@
 module Operators where
 
 import Data.Complex
+import Data.List (foldl1')
 
 import BraKet
 import LinAlg
@@ -17,8 +18,8 @@ create = Operator (\state -> case state of
       (Ket Fock cs) -> Ket Fock $ (U.zipWith (*) 
             sqrts newCoeffs)
         where
-          sqrts = U.fromList $ map ((:+0.0) . sqrt) [0.0..numStates+1]
-          numStates = fromIntegral $ U.length cs :: Double
+          sqrts = U.generate (numStates + 2) ((:+0.0) . sqrt . fromIntegral)
+          numStates = U.length cs 
           newCoeffs = U.cons (1.0 :+ 0.0) cs 
         )
 
@@ -30,8 +31,8 @@ annihilate = Operator (\ket -> case ket of
       -- General case
       (Ket Fock cs) -> Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
         where
-          sqrts = U.fromList $ map (sqrt . (:+0.0) . (+1.0)) [0.0..numStates-1]
-          numStates = fromIntegral $ U.length cs :: Double
+          sqrts = U.generate numStates ((:+0.0) . sqrt . (+1.0) . fromIntegral)
+          numStates = U.length cs 
           newCoeffs = U.tail cs
       )
 
@@ -45,7 +46,7 @@ quadX2 = ((1.0 :+ 0.0)/(0.0 :+ 2.0)) <**> (annihilate <~> create)
 
 -- Density matrix operator
 densityMatrix :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double))
-densityMatrix ps kets = foldl1 (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
+densityMatrix ps kets = foldl1' (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
   where
     outProds = map (\state -> outerProduct state state) kets
 

@@ -37,10 +37,14 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -fllvm
+    - -prof
+    - -fforce-recomp
     dependencies:
     - optiqs
     - vector
     - vector-fftw 
+    - ghc-prof
 
 tests:
   optiqs-test:
@@ -50,6 +54,5 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    - -O3
     dependencies:
     - optiqs

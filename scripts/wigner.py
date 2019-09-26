@@ -42,7 +42,7 @@ if __name__ == "__main__":
     xs = xs.reshape((n, n))
     ys = ys.reshape((n, n))
 
-    ws = fp.fftshift(ws)
+    #ws = fp.fftshift(ws)
 
     plt.imshow(np.abs(ws))
     plot_surf(xs, ys, np.abs(ws))

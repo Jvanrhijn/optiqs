@@ -2,7 +2,7 @@
 module Util where
 
 import Data.Complex
-import Data.List
+import Data.List 
 
 import qualified Data.Vector.Unboxed as U
 import qualified Data.Vector.Generic.Mutable as M
@@ -12,7 +12,7 @@ import Numeric.FFT.Vector.Invertible
 -- fourier transform all rows, then all columns
 fft2d :: [[Complex Double]] -> [[Complex Double]]
 fft2d vs = transpose $ map (U.toList . run dft . U.fromList) $ 
-    transpose $ map (U.toList . run idft . U.fromList) vs
+    transpose $ map (U.toList . run dft . U.fromList) vs
 
 -- general useful stuff
 
