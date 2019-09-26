@@ -53,7 +53,7 @@ prop_annihilate_eigenstate =
 prop_displaced_vacuum :: Property
 prop_displaced_vacuum = forAll (choose (10, 50)) $ \n -> 
     forAll (genSizedComplex 1.0) $ \alpha ->
-        norm (act (displacement n alpha) vacuum <~> (coherent n alpha)) <= 1e-3 * (fromIntegral n)
+        norm (act (displacement (n+1) alpha) vacuum <~> (coherent n alpha)) <= 1e-3 * (fromIntegral n)
 
 
 return []

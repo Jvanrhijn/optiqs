@@ -21,7 +21,6 @@ data Basis = Fock
 -- in which the Ket is written
 data Ket c where
     Ket :: Basis -> U.Vector c -> Ket c
-    Nil :: Ket c
       deriving (Show, Eq)
 
 getCoeffs :: Ket c -> U.Vector c
@@ -32,21 +31,19 @@ mapKet f (Ket basis cs) = Ket basis $ U.map f cs
 
 instance Vector (Ket (Complex Double)) where
     -- Zero vector
-    vzero = Nil
+    vzero = Ket Fock U.empty
     -- Negation: just negate all coefficients
     vneg ket = mapKet negate ket
     
     -- Addition: add coefficients element-wise
-    k@(Ket _ _) <+> Nil = k
-    Nil <+> k@(Ket _ _) = k
     (Ket b exp1) <+> (Ket _ exp2) = Ket b $ U.zipWith (+) 
             (padZeroN' lendif21 exp1) (padZeroN' lendif12 exp2)
-      where 
+      where
         lendif12 = max 0 $ U.length exp1 - U.length exp2
         lendif21 = max 0 $ U.length exp2 - U.length exp1
 
     -- Scalar multiplication: multiply all coefficients
-    a <**> ket = mapKet (*a) ket
+    (<**>) a = mapKet (*a)
 
 instance Hilbert (Ket (Complex Double)) where
     -- Inner product: Like l2 inner product; multiply coefficients 

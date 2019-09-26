@@ -32,16 +32,17 @@ normalize :: Hilbert v => v -> v
 normalize v = ((1.0 :+ 0.0) / (norm v :+ 0.0)) <**> v
 
 -- vacuum Fock state
-vacuum :: Ket (Complex Double)
-vacuum = Ket Fock $ U.fromList [1.0]
+vacuum :: Int -> Ket (Complex Double)
+vacuum n = Ket Fock $ U.fromList ([1.0] ++ replicate (n-1) 0)
 
 -- n-photon Fock basis state
 fockN :: Int -> Ket (Complex Double)
-fockN n = normalize $ act ((mconcat . replicate n) create) vacuum 
+fockN n = normalize $ act ((mconcat . replicate n) create) (vacuum 10)
 
 -- Coherent state
 coherent :: Int -> Complex Double -> Ket (Complex Double)
 coherent m alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $
-                     U.fromList [alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n) | n <- [0..m]])
+                     U.generate (m+1) (\n -> alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n)))
+                     --U.fromList [alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n) | n <- [0..m]])
 
 

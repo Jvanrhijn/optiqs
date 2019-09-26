@@ -12,29 +12,23 @@ import qualified Data.Vector.Unboxed as U
 -- Creation and annihilation operator definitions --
 
 create :: Operator (Ket (Complex Double))
-create = Operator (\state -> case state of 
-      -- Any operator acting on vzero returns vzero
-      Nil -> Nil   
-      (Ket Fock cs) -> Ket Fock $ (U.zipWith (*) 
-            sqrts newCoeffs)
+create = Operator fun
+    where
+      fun (Ket Fock cs) = Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
         where
           sqrts = U.generate (numStates + 2) ((:+0.0) . sqrt . fromIntegral)
           numStates = U.length cs 
           newCoeffs = U.cons (1.0 :+ 0.0) cs 
-        )
 
 -- TODO: have lowering operator act correctly on the vacuum
 annihilate :: Operator (Ket (Complex Double))
-annihilate = Operator (\ket -> case ket of 
-      -- Any operator acting on vzero returns vzero
-      Nil -> Nil   
-      -- General case
-      (Ket Fock cs) -> Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
+annihilate = Operator fun
+    where
+      fun (Ket Fock cs) = Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
         where
           sqrts = U.generate numStates ((:+0.0) . sqrt . (+1.0) . fromIntegral)
           numStates = U.length cs 
           newCoeffs = U.tail cs
-      )
 
 -- Number operator definition: n = conj(a) <> a
 number :: Operator (Ket (Complex Double))

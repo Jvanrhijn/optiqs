@@ -26,10 +26,10 @@ main = do
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
 states :: [Ket (Complex Double)]
-states = [vacuum, fockN 1]
+states = [vacuum 10]
 
 basis :: [Ket (Complex Double)]
-basis = map fockN [0, 1]
+basis = map fockN [0]
 
 bound :: Double
 bound = 3.0
