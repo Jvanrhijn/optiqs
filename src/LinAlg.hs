@@ -20,7 +20,7 @@ class Vector v where
     vneg :: v -> v
     (<~>) :: v -> v -> v
     -- vector subtraction for convenience
-    u <~> v = u <+> (vneg v)
+    u <~> v = u <+> vneg v
 
 class Vector v => Hilbert v where
     -- Inner product
@@ -39,7 +39,7 @@ class Dual a b where
 -- Data structure represnting a generic linear operator
 -- mapping an object into the same space, hence it wraps
 -- an endofunction.
-data Operator v = Operator {
+newtype Operator v = Operator {
     act :: v -> v
 }
 
@@ -50,21 +50,19 @@ instance Monoid (Operator v) where
     mempty = Operator id
 
 instance Vector v => Vector (Operator v) where
-    o1 <+> o2 = Operator (\x -> (act o1 x) <+> (act o2 x))
+    o1 <+> o2 = Operator (\x -> act o1 x <+> act o2 x)
     a <**> o = Operator (\x -> a <**> act o x)
-    vzero = Operator (\_ -> vzero)
-    vneg o = Operator (\x -> vneg $ act o x)
+    vzero = Operator $ const vzero
+    vneg o = Operator $ vneg . act o
 
 -- Trace of an operator in some basis
 trace :: Hilbert v => [v] -> Operator v -> Complex Double
-trace basis op = sum $ map (\vec -> vec <.> (act op vec)) basis
+trace basis op = sum $ map (\vec -> vec <.> act op vec) basis
 
 -- Operator exponential
 expOpTerm :: Vector v => Int -> Operator v -> Operator v
 expOpTerm 0 _ = Operator id
-expOpTerm n op = (((1.0 :+ 0.0) / (fromIntegral n)) <**> op) <> expOpTerm (n-1) op
+expOpTerm n op = (((1.0 :+ 0.0) / fromIntegral n) <**> op) <> expOpTerm (n-1) op
 
 expOp :: Vector v => Int -> Operator v -> Operator v
-expOp nterms op = foldl1' (<+>) [expOpTerm n op | n <- [0..nterms]] 
---expOp nterms op = foldl1' (<+>) (scanl (\l r -> (r <**> (l <> op))) (Operator id) $ coeffs)
---    where coeffs = [1.0 / k :+ 0.0 | k <- [1..fromIntegral nterms]]
+expOp nterms op = foldr1 (<+>) [expOpTerm n op | n <- [0..nterms]] 

@@ -25,22 +25,31 @@ main = do
     writeComplex "expd" $ computeExpD dZ (-bound, bound) states
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
+dim :: Int
+dim = 50
+
 states :: [Ket (Complex Double)]
-states = [vacuum 10]
+states = [vacuum dim]
 
 basis :: [Ket (Complex Double)]
-basis = map fockN [0]
+basis = map (fockN dim) [0..0]
+
+nsteps :: Int
+nsteps = 20
 
 bound :: Double
 bound = 3.0
 
 dZ :: Double
-dZ = 0.1
+dZ = 2.0 * bound / fromIntegral nsteps
+
+nterms :: Int
+nterms = 50
 
 expDispFock :: Complex Double -> [Ket (Complex Double)] -> Complex Double
-expDispFock alpha states = expectDisp 20 alpha ps basis states
+expDispFock alpha states = expectDisp nterms alpha ps basis states
   where
-    ps = replicate (length states) (1.0 / (fromIntegral $ length states)) :: [Double]
+    ps = replicate (length states) $ 1.0 / fromIntegral (length states) :: [Double]
 
 getPlane :: Double -> Double -> Double -> [Complex Double]
 getPlane dz zMin zMax = (:+) <$> range <*> range 
@@ -48,7 +57,7 @@ getPlane dz zMin zMax = (:+) <$> range <*> range
     range = [zMin, zMin+dz..zMax]
 
 computeExpD :: Double -> (Double, Double) -> [Ket (Complex Double)] -> [Complex Double]
-computeExpD dz (zMin, zMax) states = (flip expDispFock states) <$> plane
+computeExpD dz (zMin, zMax) states = (`expDispFock` states) <$> plane
   where plane = getPlane dz zMin zMax
 
 writeComplex :: FilePath -> [Complex Double] -> IO ()

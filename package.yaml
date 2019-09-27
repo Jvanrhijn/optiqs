@@ -39,9 +39,8 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -fllvm
-    - -fforce-recomp
-    - -fprof-auto
     - -O2
+    - -funbox-strict-fields
     dependencies:
     - optiqs
     - vector

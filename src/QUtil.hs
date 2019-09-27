@@ -23,7 +23,7 @@ takeKet n (Ket basis coeffs) = Ket basis $ U.take n coeffs
 expectedValue :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double)) 
                                         -> [Ket (Complex Double)]  -> Complex Double
 --expectedValue op vec = vec <.> (act op vec)
-expectedValue ps basis op vs = trace basis $ (densityMatrix ps vs) <> op
+expectedValue ps basis op vs = trace basis $ densityMatrix ps vs <> op
 
 commutator :: Vector v => Operator v -> Operator v -> Operator v
 commutator a b = a <> b <~> b <> a
@@ -31,18 +31,17 @@ commutator a b = a <> b <~> b <> a
 normalize :: Hilbert v => v -> v
 normalize v = ((1.0 :+ 0.0) / (norm v :+ 0.0)) <**> v
 
--- vacuum Fock state
+-- sized vacuum Fock state
 vacuum :: Int -> Ket (Complex Double)
-vacuum n = Ket Fock $ U.fromList ([1.0] ++ replicate (n-1) 0)
+vacuum n = Ket Fock $ U.fromList $ 1.0 : replicate (n-1) 0.0
 
 -- n-photon Fock basis state
-fockN :: Int -> Ket (Complex Double)
-fockN n = normalize $ act ((mconcat . replicate n) create) (vacuum 10)
+fockN :: Int -> Int -> Ket (Complex Double)
+fockN m n = normalize $ act ((mconcat . replicate n) create) (vacuum (m + 1))
 
 -- Coherent state
 coherent :: Int -> Complex Double -> Ket (Complex Double)
-coherent m alpha = (exp $ - (alpha * conjugate alpha) / 2.0) <**> (Ket Fock $
-                     U.generate (m+1) (\n -> alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n)))
-                     --U.fromList [alpha**(fromIntegral n) / (sqrt $ fromIntegral $ factorial n) | n <- [0..m]])
+coherent m alpha = (exp (-(alpha * conjugate alpha)) / 2.0) <**> Ket Fock (
+                     U.fromList [alpha ** fromIntegral n / sqrt (fromIntegral $ factorial n) | n <- [0..m]])
 
 
