@@ -38,7 +38,8 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -fllvm
-    - -O22
+    - -O2
+    - -funbox-strict-fields
     dependencies:
     - optiqs
     - vector

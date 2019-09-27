@@ -34,7 +34,7 @@ instance Vector (Ket (Complex Double)) where
     -- Zero vector
     vzero = Nil
     -- Negation: just negate all coefficients
-    vneg ket = mapKet negate ket
+    vneg = mapKet negate
     
     -- Addition: add coefficients element-wise
     k@(Ket _ _) <+> Nil = k

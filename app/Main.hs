@@ -26,19 +26,22 @@ main = do
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
 dim :: Int
-dim = 10
+dim = 50
 
 states :: [Ket (Complex Double)]
-states = [coherent dim 1.0]
+states = [vacuum dim]
 
 basis :: [Ket (Complex Double)]
-basis = map (fockN dim) [0, 1]
+basis = map (fockN dim) [0..0]
+
+nsteps :: Int
+nsteps = 20
 
 bound :: Double
 bound = 3.0
 
 dZ :: Double
-dZ = 0.1
+dZ = 2.0 * bound / fromIntegral nsteps
 
 nterms :: Int
 nterms = 50
@@ -54,7 +57,7 @@ getPlane dz zMin zMax = (:+) <$> range <*> range
     range = [zMin, zMin+dz..zMax]
 
 computeExpD :: Double -> (Double, Double) -> [Ket (Complex Double)] -> [Complex Double]
-computeExpD dz (zMin, zMax) states = (flip expDispFock states) <$> plane
+computeExpD dz (zMin, zMax) states = (`expDispFock` states) <$> plane
   where plane = getPlane dz zMin zMax
 
 writeComplex :: FilePath -> [Complex Double] -> IO ()

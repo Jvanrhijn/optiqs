@@ -46,7 +46,7 @@ quadX2 = ((1.0 :+ 0.0)/(0.0 :+ 2.0)) <**> (annihilate <~> create)
 
 -- Density matrix operator
 densityMatrix :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double))
-densityMatrix ps kets = foldl1' (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
+densityMatrix ps kets = foldr1 (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
   where
     outProds = map (\state -> outerProduct state state) kets
 
