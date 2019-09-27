@@ -38,8 +38,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -fllvm
-    - -prof
-    - -fforce-recomp
+    - -O22
     dependencies:
     - optiqs
     - vector

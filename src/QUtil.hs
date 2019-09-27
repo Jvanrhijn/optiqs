@@ -31,13 +31,13 @@ commutator a b = a <> b <~> b <> a
 normalize :: Hilbert v => v -> v
 normalize v = ((1.0 :+ 0.0) / (norm v :+ 0.0)) <**> v
 
--- vacuum Fock state
-vacuum :: Ket (Complex Double)
-vacuum = Ket Fock $ U.fromList [1.0]
+-- sized vacuum Fock state
+vacuum :: Int -> Ket (Complex Double)
+vacuum n = Ket Fock $ U.fromList $ [1.0] ++ replicate (n-1) 0.0
 
 -- n-photon Fock basis state
-fockN :: Int -> Ket (Complex Double)
-fockN n = normalize $ act ((mconcat . replicate n) create) vacuum 
+fockN :: Int -> Int -> Ket (Complex Double)
+fockN m n = normalize $ act ((mconcat . replicate n) create) (vacuum (m + 1))
 
 -- Coherent state
 coherent :: Int -> Complex Double -> Ket (Complex Double)

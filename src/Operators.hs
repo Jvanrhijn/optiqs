@@ -20,7 +20,7 @@ create = Operator (\state -> case state of
         where
           sqrts = U.generate (numStates + 2) ((:+0.0) . sqrt . fromIntegral)
           numStates = U.length cs 
-          newCoeffs = U.cons (1.0 :+ 0.0) cs 
+          newCoeffs = U.cons (0.0 :+ 0.0) $ U.take (numStates-1) cs
         )
 
 -- TODO: have lowering operator act correctly on the vacuum
@@ -33,7 +33,7 @@ annihilate = Operator (\ket -> case ket of
         where
           sqrts = U.generate numStates ((:+0.0) . sqrt . (+1.0) . fromIntegral)
           numStates = U.length cs 
-          newCoeffs = U.tail cs
+          newCoeffs = U.tail cs `U.snoc` 0.0
       )
 
 -- Number operator definition: n = conj(a) <> a
@@ -52,7 +52,7 @@ densityMatrix ps kets = foldl1' (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
 
 -- Displacement operator
 displacement :: Int -> Complex Double -> Operator (Ket (Complex Double))
-displacement n alpha = expOp n (alpha <**> create <~> ((conjugate alpha) <**> annihilate))
+displacement n alpha = expOp n (alpha <**> create <~> (conjugate alpha <**> annihilate))
 
 -- Squeezing operator
 squeeze :: Int -> Complex Double -> Operator (Ket (Complex Double))
