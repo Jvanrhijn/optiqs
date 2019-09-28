@@ -19,7 +19,7 @@ newtype Ket c = Ket (L.Vector c)
       deriving (Show, Eq)
 
 -- Function used to act on a Ket with an operator
-act :: Operator -> Ket (Complex Double) -> Ket (Complex Double)
+act :: MatOp -> Ket (Complex Double) -> Ket (Complex Double)
 act op ket = Ket $ repr op L.#> getCoeffs ket
 
 getCoeffs :: Ket c -> L.Vector c
@@ -42,5 +42,5 @@ instance Hilbert (Ket (Complex Double)) where
     (Ket coeffs1) <.> (Ket coeffs2) = coeffs1 L.<.> coeffs2
 
 outerProduct :: Ket (Complex Double) -> Ket (Complex Double) 
-                                     -> Operator
+                                     -> MatOp 
 outerProduct (Ket cs1) (Ket cs2) = Operator $ cs1 `L.outer` cs2

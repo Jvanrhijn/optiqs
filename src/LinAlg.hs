@@ -28,24 +28,34 @@ class Vector v => Hilbert v where
     -- Vector norm, default definition generates norm
     -- from inner product
     norm :: v -> Double
-    norm v = magnitude $ sqrt $ v <.> v
+    norm v = sqrt . magnitude $ v <.> v
 
 -- Data structure representing a generic linear operator
--- in a specific basis (we use the Fock basis here)
-newtype Operator = Operator {
-    repr :: L.Matrix (Complex Double)
+-- in some representation
+newtype Operator r = Operator {
+    repr :: r 
 } 
 
+instance Functor Operator where
+    fmap f (Operator r) = Operator $ f r
+
+instance Applicative Operator where
+    pure = Operator
+    (Operator f) <*> op = f <$> op
+
+-- Type alias for matrix representation of operator
+type MatOp = Operator (L.Matrix (Complex Double))
+
 -- Allow operators to be composed
-instance Semigroup Operator where
-    (Operator r1) <> (Operator r2) = Operator (r1 L.<> r2)
+instance Semigroup r => Semigroup (Operator r) where
+    (Operator r1) <> (Operator r2) = Operator (r1 <> r2)
 
 -- Operators are vectors
-instance Vector Operator where
+instance Vector MatOp where
     o1 <+> o2 = Operator (repr o1 + repr o2)
     a <**> o = Operator (L.cmap (*a) $ repr o)
-    vneg o = Operator $ negate $ repr o
+    vneg o = negate <$> o
 
 -- Trace of an operator 
-trace :: Operator -> Complex Double
+trace :: MatOp -> Complex Double
 trace = L.sumElements . L.takeDiag . repr

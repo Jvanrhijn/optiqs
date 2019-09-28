@@ -39,7 +39,9 @@ dZ = 2.0 * bound / fromIntegral nsteps
 -- convert to a list of sized state vectors
 states :: [Int -> Ket (Complex Double)]
 -- vacuum 
-states = [vacuum]
+--states = [vacuum]
+-- squeezed vacuum
+states = [\dim -> act (squeeze dim 0.5) $ vacuum dim]
 -- one photon Fock
 --states = [flip fockN 2]
 -- Schrodinger cat

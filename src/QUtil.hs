@@ -21,11 +21,11 @@ takeKet :: Element c => Int -> Ket c -> Ket c
 takeKet n (Ket coeffs) = Ket $ L.subVector 0 n coeffs
 
 -- Expected value of an operator O computed as Tr(rho <> O)
-expectedValue :: Operator -> [Complex Double] -> [Ket (Complex Double)] -> Complex Double
-expectedValue op ps kets = trace . Operator $ repr op L.<> repr (densityMatrix ps kets)
+expectedValue :: MatOp -> [Complex Double] -> [Ket (Complex Double)] -> Complex Double
+expectedValue op ps kets = trace $ op Prelude.<> densityMatrix ps kets
 
 -- Commutator of two operators
-commutator :: Operator -> Operator -> Operator
+commutator :: MatOp -> MatOp -> MatOp
 commutator a b = (a Prelude.<> b) <~> (b Prelude.<> a)
 
 -- normalization function
