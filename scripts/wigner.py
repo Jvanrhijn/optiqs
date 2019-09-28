@@ -42,10 +42,17 @@ if __name__ == "__main__":
     xs = xs.reshape((n, n))
     ys = ys.reshape((n, n))
 
-    #ws = fp.fftshift(ws)
 
+    fig = plt.figure()
+    ax = fig.gca(projection="3d")
+
+    ws = np.fft.fftshift(ws)
+
+    ax.plot_surface(xs, ys, np.abs(ws))
+
+    plt.figure()
     plt.imshow(np.abs(ws))
-    plot_surf(xs, ys, np.abs(ws))
+
     plt.show()
 
 

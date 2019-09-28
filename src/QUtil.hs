@@ -6,42 +6,40 @@
 module QUtil where
 
 import Data.Complex
+import Data.List
+
 import Test.QuickCheck
+import Numeric.LinearAlgebra as L
 
 import LinAlg
 import Util
 import BraKet
 import Operators
 
-import qualified Data.Vector.Unboxed as U
-
 -- Utility functions --
+takeKet :: Element c => Int -> Ket c -> Ket c
+takeKet n (Ket coeffs) = Ket $ L.subVector 0 n coeffs
 
-takeKet :: U.Unbox c => Int -> Ket c -> Ket c
-takeKet n (Ket basis coeffs) = Ket basis $ U.take n coeffs
+-- Expected value of an operator O computed as Tr(rho <> O)
+expectedValue :: Operator -> [Complex Double] -> [Ket (Complex Double)] -> Complex Double
+expectedValue op ps kets = trace . Operator $ repr op L.<> repr (densityMatrix ps kets)
 
-expectedValue :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double)) 
-                                        -> [Ket (Complex Double)]  -> Complex Double
---expectedValue op vec = vec <.> (act op vec)
-expectedValue ps basis op vs = trace basis $ densityMatrix ps vs <> op
+-- Commutator of two operators
+commutator :: Operator -> Operator -> Operator
+commutator a b = (a Prelude.<> b) <~> (b Prelude.<> a)
 
-commutator :: Vector v => Operator v -> Operator v -> Operator v
-commutator a b = a <> b <~> b <> a
-
+-- normalization function
 normalize :: Hilbert v => v -> v
 normalize v = ((1.0 :+ 0.0) / (norm v :+ 0.0)) <**> v
 
 -- sized vacuum Fock state
 vacuum :: Int -> Ket (Complex Double)
-vacuum n = Ket Fock $ U.fromList $ 1.0 : replicate (n-1) 0.0
+vacuum n = Ket . L.fromList $ 1.0 : replicate (n-1) 0.0
 
 -- n-photon Fock basis state
 fockN :: Int -> Int -> Ket (Complex Double)
-fockN m n = normalize $ act ((mconcat . replicate n) create) (vacuum (m + 1))
+fockN m n = QUtil.normalize $ act (foldl1' (Prelude.<>) $ replicate n (create m)) (vacuum m)
 
 -- Coherent state
 coherent :: Int -> Complex Double -> Ket (Complex Double)
-coherent m alpha = (exp (-(alpha * conjugate alpha)) / 2.0) <**> Ket Fock (
-                     U.fromList [alpha ** fromIntegral n / sqrt (fromIntegral $ factorial n) | n <- [0..m]])
-
-
+coherent m alpha = act (displacement m alpha) $ vacuum m

@@ -26,6 +26,7 @@ dependencies:
 - vector-fftw
 - split
 - ghc-prof
+- hmatrix
 
 library:
   source-dirs: src
@@ -40,7 +41,7 @@ executables:
     - -with-rtsopts=-N
     - -fllvm
     - -O2
-    - -funbox-strict-fields
+    - -fforce-recomp
     dependencies:
     - optiqs
     - vector
@@ -52,7 +53,7 @@ tests:
     source-dirs:         test
     ghc-options:
     - -threaded
-    - -rtsoptfs
+    - -rtsopts
     - -with-rtsopts=-N
     dependencies:
     - optiqs

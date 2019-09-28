@@ -12,53 +12,59 @@ import LinAlg
 import Data.Complex
 import Data.List.Split
 
-import qualified Data.Vector.Unboxed as U
-import qualified Data.Vector.Generic.Mutable as M
-import Numeric.FFT.Vector.Invertible
-
 main :: IO ()
 main = do
-    --let expd = computeExpD dZ (-bound, bound) states
-    --let n = round $ sqrt $ fromIntegral $ length expd
-    --let expd2d = chunksOf n expd
-    --writeComplex "expd" $ mconcat $ fft2d expd2d
-    writeComplex "expd" $ computeExpD dZ (-bound, bound) states
+    let expd = computeExpD dim ps dZ (-bound, bound) states
+    let n = round . sqrt . fromIntegral . length $ expd
+    -- Wigner transform the expected D
+    writeComplex "expd" . mconcat . wt2d . chunksOf n $ expd 
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
-dim :: Int
+-- dimension of vector space to work in
 dim = 50
-
-states :: [Ket (Complex Double)]
-states = [vacuum dim]
-
-basis :: [Ket (Complex Double)]
-basis = map (fockN dim) [0..0]
-
-nsteps :: Int
+-- classical probabilities of mixed state
+ps = [1.0]
+-- number of steps in the complex plane to use
+-- computation scales as O(nsteps^2)
 nsteps = 20
+-- bounds on the complex plane
+-- for some reason the GC freaks out over a bound of 5.0 ¯\_(ツ)_/¯
+bound = 5.1
 
-bound :: Double
-bound = 3.0
-
-dZ :: Double
+-- step size in complex plane
 dZ = 2.0 * bound / fromIntegral nsteps
 
-nterms :: Int
-nterms = 50
+-- list of states to use
+-- really a list of functions, I use applicative to 
+-- convert to a list of sized state vectors
+states :: [Int -> Ket (Complex Double)]
+-- vacuum 
+states = [vacuum]
+-- one photon Fock
+--states = [flip fockN 1]
+-- Schrodinger cat
+--states = [\dim -> coherent dim (-2.0) <+> coherent dim 2.0]
+-- Mixed schrodinger cat
+--states = [flip coherent ((-2.0) :+ 0.0), flip coherent (2.0 :+ 0.0)]
 
-expDispFock :: Complex Double -> [Ket (Complex Double)] -> Complex Double
-expDispFock alpha states = expectDisp nterms alpha ps basis states
-  where
-    ps = replicate (length states) $ 1.0 / fromIntegral (length states) :: [Double]
-
+-- Construct the complex plane from a range and step size
 getPlane :: Double -> Double -> Double -> [Complex Double]
 getPlane dz zMin zMax = (:+) <$> range <*> range 
   where
     range = [zMin, zMin+dz..zMax]
 
-computeExpD :: Double -> (Double, Double) -> [Ket (Complex Double)] -> [Complex Double]
-computeExpD dz (zMin, zMax) states = (`expDispFock` states) <$> plane
+-- Compute the expected value of the displacement operator
+-- over the complex plane
+computeExpD :: Int -> [Complex Double] -> Double -> (Double, Double) 
+                   -> [Int -> Ket (Complex Double)] -> [Complex Double]
+computeExpD dim ps dz (zMin, zMax) states = (\z -> expectDisp dim z ps (states <*> [dim])) <$> plane
   where plane = getPlane dz zMin zMax
 
+-- Write complex array to file
 writeComplex :: FilePath -> [Complex Double] -> IO ()
 writeComplex fpath = writeFile fpath . complexToPlane
+
+-- Make list of complex numbers easy to parse by python
+complexToPlane :: [Complex Double] -> String
+complexToPlane [] = ""
+complexToPlane ((x :+ y):zs) = show x ++ " " ++ show y ++ "\n" ++ complexToPlane zs

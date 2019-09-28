@@ -7,52 +7,32 @@ import BraKet
 import LinAlg
 import Util
 
-import qualified Data.Vector.Unboxed as U
+import qualified Numeric.LinearAlgebra as L
 
 -- Creation and annihilation operator definitions --
 
-create :: Operator (Ket (Complex Double))
-create = Operator fun
-    where
-      fun (Ket Fock cs) = Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
-        where
-          sqrts = U.generate (numStates + 2) ((:+0.0) . sqrt . fromIntegral)
-          numStates = U.length cs 
-          newCoeffs = U.cons (0.0 :+ 0.0) $ U.take (numStates-1) cs
-        )
+-- Creation operator in Fock basis
+create :: Int -> Operator 
+create n = Operator $ (L.><) n n elements
+  where
+    elements = [if i `elem` nonzeros then (sqrt .fromIntegral) (i `mod` n + 1) else 0 | i <- [0..n^2-1]]
+    nonzeros = [i * n + i - 1 | i <- [0..n^2]]
 
--- TODO: have lowering operator act correctly on the vacuum
-annihilate :: Operator (Ket (Complex Double))
-annihilate = Operator fun
-    where
-      fun (Ket Fock cs) = Ket Fock $ (U.zipWith (*) sqrts newCoeffs)
-        where
-          sqrts = U.generate numStates ((:+0.0) . sqrt . (+1.0) . fromIntegral)
-          numStates = U.length cs 
-          newCoeffs = U.tail cs `U.snoc` 0.0
-      )
+-- Annihilation operator is just conjugate of creation
+annihilate :: Int -> Operator 
+annihilate = Operator . L.tr . repr . create
 
 -- Number operator definition: n = conj(a) <> a
-number :: Operator (Ket (Complex Double))
-number = create <> annihilate
-
--- Quadratures
-quadX1 = (0.5 :+ 0.0) <**> (annihilate <+> create)
-quadX2 = ((1.0 :+ 0.0)/(0.0 :+ 2.0)) <**> (annihilate <~> create)
+number :: Int -> Operator 
+number n = create n <> annihilate n
 
 -- Density matrix operator
-densityMatrix :: [Double] -> [Ket (Complex Double)] -> Operator (Ket (Complex Double))
-densityMatrix ps kets = foldr1 (<+>) (zipWith (<**>) ((:+0.0) <$> ps) outProds)
-  where
-    outProds = map (\state -> outerProduct state state) kets
+densityMatrix :: [Complex Double] -> [Ket (Complex Double)] -> Operator
+densityMatrix ps kets = Operator. sum . map repr $ zipWith (<**>) ps projectors
+    where
+      projectors = (\state -> outerProduct state state) <$> kets :: [Operator]
 
 -- Displacement operator
-displacement :: Int -> Complex Double -> Operator (Ket (Complex Double))
-displacement n alpha = expOp n (alpha <**> create <~> (conjugate alpha <**> annihilate))
-
--- Squeezing operator
-squeeze :: Int -> Complex Double -> Operator (Ket (Complex Double))
-squeeze n z = expOp n ((0.5 :+ 0.0) <**> (conjugate z <**> asq <~> (z <**> asq')))
-  where
-    asq' = create <> create
-    asq = annihilate <> annihilate 
+displacement :: Int -> Complex Double -> Operator 
+displacement n alpha = Operator $ 0 `seq` L.expm $ L.cmap (* conjugate alpha) (repr (create n)) 
+                                - L.cmap (*alpha) (repr (annihilate n))

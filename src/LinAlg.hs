@@ -5,6 +5,8 @@
 
 module LinAlg where
 
+import qualified Numeric.LinearAlgebra as L
+
 import Data.Complex
 import Util
 import Data.List
@@ -14,8 +16,6 @@ class Vector v where
     (<+>) :: v -> v -> v 
     -- scalar multiplication
     (<**>) :: Complex Double -> v -> v
-    -- zero vector
-    vzero :: v
     -- additive inverse 
     vneg :: v -> v
     (<~>) :: v -> v -> v
@@ -30,39 +30,22 @@ class Vector v => Hilbert v where
     norm :: v -> Double
     norm v = magnitude $ sqrt $ v <.> v
 
--- Type class representing mathematical objects
--- with a dual representation, for instance
--- the bra <-> ket duality.
-class Dual a b where
-    dual :: a -> b
+-- Data structure representing a generic linear operator
+-- in a specific basis (we use the Fock basis here)
+newtype Operator = Operator {
+    repr :: L.Matrix (Complex Double)
+} 
 
--- Data structure represnting a generic linear operator
--- mapping an object into the same space, hence it wraps
--- an endofunction.
-newtype Operator v = Operator {
-    act :: v -> v
-}
+-- Allow operators to be composed
+instance Semigroup Operator where
+    (Operator r1) <> (Operator r2) = Operator (r1 L.<> r2)
 
-instance Semigroup (Operator v) where
-    (Operator f1) <> (Operator f2) = Operator (f1 . f2)
+-- Operators are vectors
+instance Vector Operator where
+    o1 <+> o2 = Operator (repr o1 + repr o2)
+    a <**> o = Operator (L.cmap (*a) $ repr o)
+    vneg o = Operator $ negate $ repr o
 
-instance Monoid (Operator v) where
-    mempty = Operator id
-
-instance Vector v => Vector (Operator v) where
-    o1 <+> o2 = Operator (\x -> act o1 x <+> act o2 x)
-    a <**> o = Operator (\x -> a <**> act o x)
-    vzero = Operator $ const vzero
-    vneg o = Operator $ vneg . act o
-
--- Trace of an operator in some basis
-trace :: Hilbert v => [v] -> Operator v -> Complex Double
-trace basis op = sum $ map (\vec -> vec <.> act op vec) basis
-
--- Operator exponential
-expOpTerm :: Vector v => Int -> Operator v -> Operator v
-expOpTerm 0 _ = Operator id
-expOpTerm n op = (((1.0 :+ 0.0) / fromIntegral n) <**> op) <> expOpTerm (n-1) op
-
-expOp :: Vector v => Int -> Operator v -> Operator v
-expOp nterms op = foldr1 (<+>) [expOpTerm n op | n <- [0..nterms]] 
+-- Trace of an operator 
+trace :: Operator -> Complex Double
+trace = L.sumElements . L.takeDiag . repr
