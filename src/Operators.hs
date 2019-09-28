@@ -34,5 +34,5 @@ densityMatrix ps kets = Operator. sum . map repr $ zipWith (<**>) ps projectors
 
 -- Displacement operator
 displacement :: Int -> Complex Double -> Operator 
-displacement n alpha = Operator $ 0 `seq` L.expm $ L.cmap (* conjugate alpha) (repr (create n)) 
+displacement n alpha = Operator . L.expm $ L.cmap (* conjugate alpha) (repr (create n)) 
                                 - L.cmap (*alpha) (repr (annihilate n))

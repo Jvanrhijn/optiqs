@@ -5,8 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fftpack as fp
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 
+# hacky solution to read space separated points from file
 def read_points(plane, wigner):
     xs, ys, ws = [], [], []
     with open(plane, "r") as file:
@@ -19,12 +21,6 @@ def read_points(plane, wigner):
             line = line.split()
             ws.append(float(line[0]) + 1j * float(line[1]))
     return np.array(xs), np.array(ys), np.array(ws)
-
-
-def plot_surf(xs, ys, zs):
-    fig = plt.figure()
-    ax = fig.gca(projection="3d")
-    ax.plot_surface(xs, ys, zs)
 
 
 if __name__ == "__main__":
@@ -42,16 +38,16 @@ if __name__ == "__main__":
     xs = xs.reshape((n, n))
     ys = ys.reshape((n, n))
 
-
     fig = plt.figure()
     ax = fig.gca(projection="3d")
 
     ws = np.fft.fftshift(ws)
 
-    ax.plot_surface(xs, ys, np.abs(ws))
+    ax.plot_surface(xs, ys, np.abs(ws), cmap=cm.coolwarm, rstride=1, cstride=1)
 
     plt.figure()
-    plt.imshow(np.abs(ws))
+    plt.contourf(xs, ys, np.abs(ws))
+    plt.axis('equal')
 
     plt.show()
 

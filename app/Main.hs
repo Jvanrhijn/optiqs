@@ -21,12 +21,12 @@ main = do
     writeComplex "plane" $ getPlane dZ (-bound) bound
 
 -- dimension of vector space to work in
-dim = 50
+dim = 30
 -- classical probabilities of mixed state
 ps = [1.0]
 -- number of steps in the complex plane to use
 -- computation scales as O(nsteps^2)
-nsteps = 20
+nsteps = 30
 -- bounds on the complex plane
 -- for some reason the GC freaks out over a bound of 5.0 ¯\_(ツ)_/¯
 bound = 5.1
@@ -41,9 +41,9 @@ states :: [Int -> Ket (Complex Double)]
 -- vacuum 
 states = [vacuum]
 -- one photon Fock
---states = [flip fockN 1]
+--states = [flip fockN 2]
 -- Schrodinger cat
---states = [\dim -> coherent dim (-2.0) <+> coherent dim 2.0]
+--states = [\dim -> coherent dim (-4.0) <+> coherent dim 4.0]
 -- Mixed schrodinger cat
 --states = [flip coherent ((-2.0) :+ 0.0), flip coherent (2.0 :+ 0.0)]
 

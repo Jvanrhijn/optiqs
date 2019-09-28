@@ -12,14 +12,13 @@ import qualified Numeric.LinearAlgebra as L
 import LinAlg
 import Util
 
--- Ket is a quantum ket vector
--- 'c' is the label type
--- Basis determines the basis in
+-- Ket is a ket vector
+-- is the coefficient type
 -- in which the Ket is written
-data Ket c where
-    Ket :: L.Vector c -> Ket c
+newtype Ket c = Ket (L.Vector c)
       deriving (Show, Eq)
 
+-- Function used to act on a Ket with an operator
 act :: Operator -> Ket (Complex Double) -> Ket (Complex Double)
 act op ket = Ket $ repr op L.#> getCoeffs ket
 
