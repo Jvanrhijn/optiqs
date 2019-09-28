@@ -53,7 +53,7 @@ instance Semigroup r => Semigroup (Operator r) where
 -- Operators are vectors
 instance Vector MatOp where
     o1 <+> o2 = Operator (repr o1 + repr o2)
-    a <**> o = Operator (L.cmap (*a) $ repr o)
+    a <**> o = L.cmap (*a) <$> o
     vneg o = negate <$> o
 
 -- Trace of an operator 
