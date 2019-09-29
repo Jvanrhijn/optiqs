@@ -8,11 +8,9 @@ module QUtil where
 import Data.Complex
 import Data.List
 
-import Test.QuickCheck
 import Numeric.LinearAlgebra as L
 
 import LinAlg
-import Util
 import BraKet
 import Operators
 

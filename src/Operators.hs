@@ -5,7 +5,6 @@ import Data.List (foldl1')
 
 import BraKet
 import LinAlg
-import Util
 
 import qualified Numeric.LinearAlgebra as L
 

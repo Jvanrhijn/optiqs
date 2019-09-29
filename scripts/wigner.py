@@ -3,7 +3,6 @@ import math
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.fftpack as fp
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
@@ -38,17 +37,28 @@ if __name__ == "__main__":
     xs = xs.reshape((n, n))
     ys = ys.reshape((n, n))
 
-    fig = plt.figure()
-    ax = fig.gca(projection="3d")
+    #ws = np.fft.fftshift(ws)
 
-    ws = np.fft.fftshift(ws)
+    fig = plt.figure(figsize=(20, 10))
 
-    ax.plot_surface(xs, ys, np.abs(ws), cmap=cm.coolwarm, rstride=1, cstride=1)
+    ax1 = fig.add_subplot(1, 2, 1, projection="3d")
 
-    plt.figure()
-    plt.contourf(xs, ys, np.abs(ws))
+    ax1.plot_surface(xs, ys, np.abs(ws), cmap=cm.coolwarm, cstride=1, rstride=1)
+
+    ax1.set_xlabel(r"Re $\beta$")
+    ax1.set_ylabel(r"Im $\beta$")
+
+    ax2 = fig.add_subplot(1, 2, 2)
+
+    ax2.set_xlabel(r"Re $\beta$")
+    ax2.set_ylabel(r"Im $\beta$")
+
+    ax2.axis("equal")
+
+    c = ax2.contourf(xs, ys, np.abs(ws))
+    fig.colorbar(c)
+
     plt.axis('equal')
-
     plt.show()
 
 

@@ -10,7 +10,6 @@ import Data.Complex
 import qualified Numeric.LinearAlgebra as L
 
 import LinAlg
-import Util
 
 -- Ket is a ket vector
 -- is the coefficient type

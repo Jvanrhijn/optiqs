@@ -5,7 +5,6 @@ module Main where
 import Wigner
 import BraKet
 import Operators
-import Util
 import QUtil
 import LinAlg
 
@@ -17,20 +16,18 @@ main = do
     let expd = computeExpD dim ps dZ (-bound, bound) states
     let n = round . sqrt . fromIntegral . length $ expd
     -- Wigner transform the expected D
-    writeComplex "expd" . mconcat . wt2d . chunksOf n $ expd 
-    writeComplex "plane" $ getPlane dZ (-bound) bound
+    let cplane = getPlane dZ (-bound) bound
+    writeComplex "wigner" $ wignerTransform cplane (dZ^2) cplane expd 
+    --writeComplex "wigner" . mconcat . wt2d . chunksOf n $ expd 
+    writeComplex "cplane" cplane
 
 -- dimension of vector space to work in
-dim = 30
--- classical probabilities of mixed state
-ps = [1.0]
+dim = 40
 -- number of steps in the complex plane to use
 -- computation scales as O(nsteps^2)
-nsteps = 30
+nsteps = 50 
 -- bounds on the complex plane
--- for some reason the GC freaks out over a bound of 5.0 ¯\_(ツ)_/¯
-bound = 5.1
-
+bound = 5.0
 -- step size in complex plane
 dZ = 2.0 * bound / fromIntegral nsteps
 
@@ -39,15 +36,23 @@ dZ = 2.0 * bound / fromIntegral nsteps
 -- convert to a list of sized state vectors
 states :: [Int -> Ket (Complex Double)]
 -- vacuum 
---states = [vacuum]
+states = [vacuum]
 -- squeezed vacuum
-states = [\dim -> act (squeeze dim 0.5) $ vacuum dim]
+--states = [\dim -> act (squeeze dim 0.75) $ vacuum dim]
 -- one photon Fock
---states = [flip fockN 2]
--- Schrodinger cat
---states = [\dim -> coherent dim (-4.0) <+> coherent dim 4.0]
+--states = [flip fockN 1]
+-- Linear combination
+--states = [\dim -> vacuum dim <+> fockN dim 1]                                                         
+-- coherent state
+--states = [flip coherent (2)]
+-- coherent superposition (AKA schrodinger's cat)
+--states = [\dim -> coherent dim 2 <+> coherent dim (-2.0)]
 -- Mixed schrodinger cat
 --states = [flip coherent ((-2.0) :+ 0.0), flip coherent (2.0 :+ 0.0)]
+-- Absorbed
+--states = [vacuum, flip fockN 1]
+-- classical probabilities of mixed state
+ps = [1.0]
 
 -- Construct the complex plane from a range and step size
 getPlane :: Double -> Double -> Double -> [Complex Double]

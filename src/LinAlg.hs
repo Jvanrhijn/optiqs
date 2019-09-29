@@ -8,7 +8,6 @@ module LinAlg where
 import qualified Numeric.LinearAlgebra as L
 
 import Data.Complex
-import Util
 import Data.List
 
 class Vector v where
